@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from app.config import settings
+from app.database import list_printers
 from app.schemas.monitoring import HealthResponse
 
 router = APIRouter()
@@ -20,7 +21,7 @@ async def dashboard(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(
         request=request,
         name="dashboard.html",
-        context={"app_name": settings.app_name},
+        context={"app_name": settings.app_name, "printers": list_printers()},
     )
 
 

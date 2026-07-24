@@ -1,10 +1,43 @@
 {% extends "base.html" %}
 {% block title %}Обзор — {{ app_name }}{% endblock %}
 {% block content %}
-  <h1>Обзор принтеров</h1>
-  <section class="card empty">
-    <h2>Приложение готово к настройке</h2>
-    <p>Добавление принтеров и SNMP-мониторинг появятся на следующих этапах.</p>
-    <a class="button" href="/printers/new">Добавить первый принтер</a>
-  </section>
+  <div class="page-heading">
+    <div>
+      <h1>Обзор принтеров</h1>
+      <p class="muted">Состояние зарегистрированных устройств.</p>
+    </div>
+    <a class="button" href="/printers/new">Добавить принтер</a>
+  </div>
+  {% if printers %}
+    <section class="card table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Название</th>
+            <th>IP-адрес</th>
+            <th>Модель</th>
+            <th>Статус</th>
+            <th>Последняя проверка</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for printer in printers %}
+            <tr>
+              <td><a href="/printers/{{ printer.id }}">{{ printer.name }}</a></td>
+              <td><code>{{ printer.host }}</code></td>
+              <td>{{ printer.model or "—" }}</td>
+              <td><span class="status status-{{ printer.status }}">{{ printer.status }}</span></td>
+              <td>{{ printer.last_checked_at or "Ещё не проверялся" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% else %}
+    <section class="card empty">
+      <h2>Принтеров пока нет</h2>
+      <p>Добавьте первое устройство. SNMP-проверка будет подключена следующим этапом.</p>
+      <a class="button" href="/printers/new">Добавить первый принтер</a>
+    </section>
+  {% endif %}
 {% endblock %}

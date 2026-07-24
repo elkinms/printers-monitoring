@@ -1,6 +1,37 @@
 {% extends "base.html" %}
-{% block title %}Новый принтер{% endblock %}
+{% block title %}{{ "Редактирование" if printer and printer.id else "Новый принтер" }}{% endblock %}
 {% block content %}
-  <h1>Новый принтер</h1>
-  <section class="card"><p>Форма будет подключена вместе с хранилищем данных.</p></section>
+  <h1>{{ "Редактирование принтера" if printer and printer.id else "Новый принтер" }}</h1>
+  <form class="card form-grid" method="post"
+        action="{{ '/printers/' ~ printer.id if printer and printer.id else '/printers' }}">
+    {% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+    <label>
+      Название
+      <input name="name" required maxlength="100" value="{{ printer.name if printer else '' }}"
+             placeholder="Принтер в бухгалтерии">
+    </label>
+    <label>
+      IP-адрес или имя узла
+      <input name="host" required maxlength="255" value="{{ printer.host if printer else '' }}"
+             placeholder="192.168.1.25">
+    </label>
+    <label>
+      Модель
+      <input name="model" maxlength="100" value="{{ printer.model if printer else '' }}"
+             placeholder="HP Color LaserJet Pro MFP 3302fdw">
+    </label>
+    <label>
+      SNMP community
+      <input name="community" maxlength="100"
+             value="{{ printer.community if printer else 'public' }}">
+    </label>
+    <label class="checkbox">
+      <input type="checkbox" name="enabled" {% if not printer or printer.enabled %}checked{% endif %}>
+      Выполнять мониторинг
+    </label>
+    <div class="form-actions">
+      <button type="submit">Сохранить</button>
+      <a class="button secondary" href="{{ '/printers/' ~ printer.id if printer and printer.id else '/' }}">Отмена</a>
+    </div>
+  </form>
 {% endblock %}

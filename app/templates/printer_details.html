@@ -1,6 +1,44 @@
 {% extends "base.html" %}
-{% block title %}Принтер {{ printer_id }}{% endblock %}
+{% block title %}{{ printer.name }}{% endblock %}
 {% block content %}
-  <h1>Принтер #{{ printer_id }}</h1>
-  <section class="card"><p>Данные мониторинга пока недоступны.</p></section>
+  <div class="page-heading">
+    <div>
+      <h1>{{ printer.name }}</h1>
+      <p class="muted"><code>{{ printer.host }}</code> · {{ printer.model or "Модель не указана" }}</p>
+    </div>
+    <div class="actions">
+      <a class="button secondary" href="/printers/{{ printer.id }}/edit">Редактировать</a>
+      <form method="post" action="/printers/{{ printer.id }}/delete"
+            onsubmit="return confirm('Удалить этот принтер?')">
+        <button class="danger" type="submit">Удалить</button>
+      </form>
+    </div>
+  </div>
+  <section class="summary-grid">
+    <article class="card">
+      <span class="label">Статус</span>
+      <strong><span class="status status-{{ printer.status }}">{{ printer.status }}</span></strong>
+    </article>
+    <article class="card">
+      <span class="label">Мониторинг</span>
+      <strong>{{ "Включён" if printer.enabled else "Отключён" }}</strong>
+    </article>
+    <article class="card">
+      <span class="label">Последняя проверка</span>
+      <strong>{{ printer.last_checked_at or "Ещё не выполнялась" }}</strong>
+    </article>
+  </section>
+  <section class="card">
+    <h2>Последние события</h2>
+    {% if events %}
+      <ul class="event-list">
+        {% for event in events %}
+          <li><span class="status status-{{ event.event_type }}">{{ event.event_type }}</span>
+              {{ event.message }} <time>{{ event.created_at }}</time></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">Событий пока нет.</p>
+    {% endif %}
+  </section>
 {% endblock %}

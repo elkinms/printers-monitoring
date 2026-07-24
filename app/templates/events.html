@@ -2,5 +2,49 @@
 {% block title %}События{% endblock %}
 {% block content %}
   <h1>События</h1>
-  <section class="card"><p>Событий пока нет.</p></section>
+  <form class="card filters" method="get">
+    <label>Принтер
+      <select name="printer_id">
+        <option value="">Все</option>
+        {% for printer in printers %}
+          <option value="{{ printer.id }}" {% if selected_printer_id == printer.id %}selected{% endif %}>
+            {{ printer.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Тип
+      <select name="event_type">
+        <option value="">Все</option>
+        {% for type in ["info", "warning", "error", "recovery"] %}
+          <option value="{{ type }}" {% if selected_event_type == type %}selected{% endif %}>{{ type }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button type="submit">Применить</button>
+    <a class="button secondary" href="/events">Сбросить</a>
+  </form>
+  <section class="card table-card">
+    {% if events %}
+      <table>
+        <thead><tr><th>Время</th><th>Принтер</th><th>Тип</th><th>Сообщение</th></tr></thead>
+        <tbody>
+          {% for event in events %}
+            <tr>
+              <td>{{ event.created_at }}</td>
+              <td>
+                {% if event.printer_id %}
+                  <a href="/printers/{{ event.printer_id }}">{{ event.printer_name }}</a>
+                {% else %}—{% endif %}
+              </td>
+              <td><span class="status status-{{ event.event_type }}">{{ event.event_type }}</span></td>
+              <td>{{ event.message }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="empty muted">Событий по выбранным условиям нет.</p>
+    {% endif %}
+  </section>
 {% endblock %}

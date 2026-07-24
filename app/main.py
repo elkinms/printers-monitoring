@@ -1,14 +1,22 @@
 """FastAPI application factory."""
 
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
+from app.database import initialize_database
 from app.routers import dashboard, events, printers, settings as settings_router
 
 BASE_DIR = Path(__file__).resolve().parent
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    initialize_database()
+    yield
 
 
 def create_app() -> FastAPI:
@@ -16,6 +24,7 @@ def create_app() -> FastAPI:
         title=settings.app_name,
         debug=settings.debug,
         version="0.1.0",
+        lifespan=lifespan,
     )
     application.mount(
         "/static",

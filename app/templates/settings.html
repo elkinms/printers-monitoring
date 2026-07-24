@@ -2,5 +2,44 @@
 {% block title %}Настройки{% endblock %}
 {% block content %}
   <h1>Настройки</h1>
-  <section class="card"><p>Настройки уведомлений появятся на следующих этапах.</p></section>
+  {% if saved %}<div class="alert success">Настройки сохранены.</div>{% endif %}
+  <form class="card form-grid" method="post">
+    <h2>Мониторинг</h2>
+    <div class="two-columns">
+      <label>Интервал опроса, минут
+        <input type="number" name="poll_interval_minutes" min="1" required
+               value="{{ settings.poll_interval_minutes }}">
+      </label>
+      <label>Предупреждение об остатке, %
+        <input type="number" name="warning_threshold_percent" min="0" max="100" required
+               value="{{ settings.warning_threshold_percent }}">
+      </label>
+    </div>
+    <h2>Email-уведомления</h2>
+    <div class="two-columns">
+      <label>SMTP-сервер
+        <input name="smtp_host" value="{{ settings.smtp_host }}">
+      </label>
+      <label>Порт
+        <input type="number" name="smtp_port" min="1" max="65535" value="{{ settings.smtp_port }}">
+      </label>
+      <label>Пользователь
+        <input name="smtp_username" value="{{ settings.smtp_username }}">
+      </label>
+      <label>Пароль
+        <input type="password" name="smtp_password" value="{{ settings.smtp_password }}">
+      </label>
+      <label>Адрес отправителя
+        <input type="email" name="smtp_from" value="{{ settings.smtp_from }}">
+      </label>
+      <label>Адрес получателя
+        <input type="email" name="smtp_to" value="{{ settings.smtp_to }}">
+      </label>
+    </div>
+    <label class="checkbox">
+      <input type="checkbox" name="smtp_tls" {% if settings.smtp_tls == "1" %}checked{% endif %}>
+      Использовать STARTTLS
+    </label>
+    <div class="form-actions"><button type="submit">Сохранить настройки</button></div>
+  </form>
 {% endblock %}
