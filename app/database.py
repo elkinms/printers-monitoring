@@ -104,6 +104,16 @@ def get_printer(printer_id: int) -> sqlite3.Row | None:
         ).fetchone()
 
 
+def list_supplies(printer_id: int) -> list[sqlite3.Row]:
+    with connection() as db:
+        return list(
+            db.execute(
+                "SELECT * FROM supplies WHERE printer_id = ? ORDER BY id",
+                (printer_id,),
+            )
+        )
+
+
 def create_printer(data: dict[str, object]) -> int:
     now = datetime.now(UTC).isoformat()
     with connection() as db:
@@ -141,6 +151,57 @@ def update_printer(printer_id: int, data: dict[str, object]) -> None:
 def delete_printer(printer_id: int) -> None:
     with connection() as db:
         db.execute("DELETE FROM printers WHERE id = ?", (printer_id,))
+
+
+def record_monitoring_result(
+    printer_id: int,
+    status: str,
+    supplies: list[dict[str, object]] | None,
+    message: str,
+) -> None:
+    now = datetime.now(UTC).isoformat()
+    with connection() as db:
+        previous = db.execute(
+            "SELECT status FROM printers WHERE id = ?", (printer_id,)
+        ).fetchone()
+        if previous is None:
+            return
+        db.execute(
+            """
+            UPDATE printers
+            SET status = ?, last_checked_at = ?
+            WHERE id = ?
+            """,
+            (status, now, printer_id),
+        )
+        if supplies is not None:
+            db.execute("DELETE FROM supplies WHERE printer_id = ?", (printer_id,))
+            db.executemany(
+                """
+                INSERT INTO supplies(printer_id, name, level_percent)
+                VALUES (?, ?, ?)
+                """,
+                [
+                    (printer_id, supply["name"], supply["level_percent"])
+                    for supply in supplies
+                ],
+            )
+        event_type = (
+            "error"
+            if status in {"offline", "error"}
+            else "warning"
+            if status == "warning"
+            else "recovery"
+            if previous["status"] in {"offline", "error", "warning"}
+            else "info"
+        )
+        db.execute(
+            """
+            INSERT INTO events(printer_id, event_type, message, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (printer_id, event_type, message, now),
+        )
 
 
 def list_events(

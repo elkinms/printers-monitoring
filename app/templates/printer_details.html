@@ -7,6 +7,9 @@
       <p class="muted"><code>{{ printer.host }}</code> · {{ printer.model or "Модель не указана" }}</p>
     </div>
     <div class="actions">
+      <form method="post" action="/printers/{{ printer.id }}/check">
+        <button type="submit">Проверить сейчас</button>
+      </form>
       <a class="button secondary" href="/printers/{{ printer.id }}/edit">Редактировать</a>
       <form method="post" action="/printers/{{ printer.id }}/delete"
             onsubmit="return confirm('Удалить этот принтер?')">
@@ -14,6 +17,11 @@
       </form>
     </div>
   </div>
+  {% if checked == "ok" %}
+    <p class="alert success">SNMP-проверка успешно выполнена.</p>
+  {% elif checked == "failed" %}
+    <p class="alert error">Принтер не ответил на SNMP-запрос. Подробности записаны в события.</p>
+  {% endif %}
   <section class="summary-grid">
     <article class="card">
       <span class="label">Статус</span>
@@ -27,6 +35,26 @@
       <span class="label">Последняя проверка</span>
       <strong>{{ printer.last_checked_at or "Ещё не выполнялась" }}</strong>
     </article>
+  </section>
+  <section class="card supplies-card">
+    <h2>Расходные материалы</h2>
+    {% if supplies %}
+      <div class="supply-list">
+        {% for supply in supplies %}
+          <div class="supply">
+            <div>
+              <strong>{{ supply.name }}</strong>
+              <span>{{ supply.level_percent ~ "%" if supply.level_percent is not none else "Нет данных" }}</span>
+            </div>
+            {% if supply.level_percent is not none %}
+              <progress max="100" value="{{ supply.level_percent }}">{{ supply.level_percent }}%</progress>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">Данные о расходных материалах пока не получены.</p>
+    {% endif %}
   </section>
   <section class="card">
     <h2>Последние события</h2>

@@ -50,6 +50,7 @@ a { color: #315efb; }
 }
 .actions form { margin: 0; }
 .actions button, .actions .button, .form-actions .button { margin-top: 0; }
+.compact { margin: 0; padding: .45rem .7rem; white-space: nowrap; }
 .muted, time { color: #667085; }
 .table-card { padding: 0; overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
@@ -98,6 +99,11 @@ input, select {
 .event-list { padding-left: 0; list-style: none; }
 .event-list li { padding: .65rem 0; border-bottom: 1px solid #e7eaf0; }
 .event-list time { float: right; }
+.supplies-card { margin-bottom: 1rem; }
+.supply-list { display: grid; gap: 1rem; }
+.supply { display: grid; gap: .4rem; }
+.supply > div { display: flex; justify-content: space-between; gap: 1rem; }
+.supply progress { width: 100%; height: 1rem; accent-color: #315efb; }
 @media (max-width: 700px) {
   header, .page-heading, .actions, .filters { align-items: stretch; flex-direction: column; }
   nav { flex-wrap: wrap; }

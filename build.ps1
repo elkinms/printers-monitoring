@@ -2,6 +2,9 @@ $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $python = Join-Path $projectRoot ".venv\Scripts\python.exe"
+$outputDirectory = Join-Path $projectRoot "dist\PrintersMonitoring"
+$databasePath = Join-Path $outputDirectory "data\printers.db"
+$databaseBackup = $null
 
 if (-not (Test-Path $python)) {
     throw "Virtual environment not found. Create .venv and install requirements first."
@@ -17,6 +20,13 @@ if (-not $pyInstallerAvailable) {
 }
 
 Write-Host "Building PrintersMonitoring..."
+
+if (Test-Path $databasePath) {
+    $databaseBackup = [System.IO.Path]::GetTempFileName()
+    Copy-Item -LiteralPath $databasePath -Destination $databaseBackup
+    Write-Host "Preserving existing database..."
+}
+
 & $python -m PyInstaller `
     --noconfirm `
     --clean `
@@ -27,11 +37,18 @@ Write-Host "Building PrintersMonitoring..."
     run.py
 
 if ($LASTEXITCODE -ne 0) {
+    if ($databaseBackup) {
+        Remove-Item -LiteralPath $databaseBackup -Force
+    }
     throw "Build failed."
 }
 
-$outputDirectory = Join-Path $projectRoot "dist\PrintersMonitoring"
 New-Item -ItemType Directory -Force -Path (Join-Path $outputDirectory "data") | Out-Null
+if ($databaseBackup) {
+    Copy-Item -LiteralPath $databaseBackup -Destination $databasePath
+    Remove-Item -LiteralPath $databaseBackup -Force
+    Write-Host "Existing database restored."
+}
 
 Write-Host ""
 Write-Host "Build completed:"

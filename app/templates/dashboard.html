@@ -18,6 +18,7 @@
             <th>Модель</th>
             <th>Статус</th>
             <th>Последняя проверка</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -28,6 +29,11 @@
               <td>{{ printer.model or "—" }}</td>
               <td><span class="status status-{{ printer.status }}">{{ printer.status }}</span></td>
               <td>{{ printer.last_checked_at or "Ещё не проверялся" }}</td>
+              <td>
+                <form method="post" action="/printers/{{ printer.id }}/check">
+                  <button class="compact" type="submit">Проверить</button>
+                </form>
+              </td>
             </tr>
           {% endfor %}
         </tbody>
@@ -36,7 +42,7 @@
   {% else %}
     <section class="card empty">
       <h2>Принтеров пока нет</h2>
-      <p>Добавьте первое устройство. SNMP-проверка будет подключена следующим этапом.</p>
+      <p>Добавьте первое устройство, чтобы запустить SNMP-мониторинг.</p>
       <a class="button" href="/printers/new">Добавить первый принтер</a>
     </section>
   {% endif %}

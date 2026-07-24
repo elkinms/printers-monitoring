@@ -13,8 +13,10 @@ from app.database import (
     delete_printer,
     get_printer,
     list_events,
+    list_supplies,
     update_printer,
 )
+from app.services.monitoring import check_printer
 
 router = APIRouter(prefix="/printers", tags=["printers"])
 templates = Jinja2Templates(
@@ -79,6 +81,8 @@ async def printer_details(request: Request, printer_id: int) -> HTMLResponse:
         context={
             "printer": printer,
             "events": list_events(printer_id=printer_id)[:10],
+            "supplies": list_supplies(printer_id),
+            "checked": request.query_params.get("checked"),
         },
     )
 
@@ -125,3 +129,14 @@ async def remove_printer(printer_id: int):
         raise HTTPException(status_code=404, detail="Printer not found")
     delete_printer(printer_id)
     return RedirectResponse("/", status_code=303)
+
+
+@router.post("/{printer_id}/check", include_in_schema=False)
+async def check_printer_now(printer_id: int):
+    if get_printer(printer_id) is None:
+        raise HTTPException(status_code=404, detail="Printer not found")
+    succeeded = await check_printer(printer_id)
+    result = "ok" if succeeded else "failed"
+    return RedirectResponse(
+        f"/printers/{printer_id}?checked={result}", status_code=303
+    )

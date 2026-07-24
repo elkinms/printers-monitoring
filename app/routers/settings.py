@@ -8,6 +8,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from app.database import get_settings, save_settings
+from app.services.scheduler import scheduler_service
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 templates = Jinja2Templates(
@@ -30,4 +31,5 @@ async def update_settings(request: Request):
     values = {key: items[-1].strip() for key, items in parsed.items()}
     values["smtp_tls"] = "1" if "smtp_tls" in values else "0"
     save_settings(values)
+    scheduler_service.reschedule()
     return RedirectResponse("/settings?saved=1", status_code=303)
